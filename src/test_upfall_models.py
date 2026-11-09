@@ -1,25 +1,3 @@
-"""
-src/test_upfall_models.py
-
-Initial end-to-end model test using UP-Fall pipeline-validation data.
-
-IMPORTANT: This dataset was constructed from personal-dataset frames reformatted
-into the UP-Fall schema to verify the adapter pipeline. It is NOT a real
-multi-subject UP-Fall benchmark. These results represent PIPELINE VALIDATION ONLY.
-
-Dataset: data/processed/upfall_temporal_features.csv
-  - 792 rows
-  - 3 activity classes: standing, sitting, walking (no running in UP-Fall ADL subset)
-  - 247 spatial features + 8 temporal features = 255 features
-
-Split strategy: Hold out all frames from two complete trial sequences as test set.
-  Prevents any data leakage across sequences from the same trial.
-
-Outputs:
-  models/upfall_temporal_classifier_test.pkl
-  results/upfall_initial_model_test.txt
-  results/upfall_initial_confusion_matrix.png
-"""
 
 import os
 import pickle
@@ -63,12 +41,6 @@ def sequence_based_split(df: pd.DataFrame, pose_df: pd.DataFrame):
     Test set = last sequence for each activity class (held out completely).
     Train set = all remaining sequences.
     """
-    # Reconstruct sequence_id mapping from pose_df (same row order, minus dropped first frames)
-    # pose_df has 800 rows; temporal_df has 792 rows (each sequence loses its first frame)
-    # We need to find which temporal rows belong to which sequences.
-    # Strategy: each sequence contributes 99 rows to temporal_df (100 - 1).
-    # Sequences in sorted order: C1_S1_A6_T1, C1_S1_A6_T2, C1_S1_A7_T1, C1_S1_A7_T2,
-    #                             C1_S1_A8_T1, C1_S1_A8_T2, C1_S2_A7_T1, C1_S2_A8_T1
     sequences_in_pose = sorted(pose_df["sequence_id"].unique())
 
     # Build sequence ID series aligned to temporal_df rows

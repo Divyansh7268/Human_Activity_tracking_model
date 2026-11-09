@@ -20,7 +20,7 @@ This repository implements an end-to-end pipeline: from raw video capture and 3D
 
 ```
 Human_Activity_Rec/
-├── data/
+├── data/                                            # (Locally generated; not tracked in git — see Dataset & Privacy)
 │   ├── raw/
 │   │   ├── pose_dataset.csv                         # Initial pilot dataset
 │   │   └── multisubject_pose_dataset.csv            # 4-subject dataset (21,227 frames)
@@ -72,6 +72,31 @@ The system was evaluated on a dedicated multi-subject dataset collected across 4
 - **Volume:** 21,227 raw frames across 16 continuous sequences (~1,326 frames per sequence, ~66 seconds each).
 - **Data Quality:** 0 missing/NaN values, 0 infinite values, 0 duplicate rows, and strictly monotonic timestamps.
 - **Processed Dataset:** 21,211 frames (after dropping the first frame of each sequence for temporal differential calculation).
+
+---
+
+## Dataset & Privacy
+
+The raw webcam dataset and processed feature datasets are **intentionally not included** in this public GitHub repository.
+
+### Privacy & Safety Rationale
+The dataset was collected from real human participants using optical webcam recordings. To safeguard participant privacy, prevent exposure of biometric motion signatures, and prevent unintended reuse or misuse, raw pose landmark data and intermediate feature matrices are excluded from version control.
+
+Accordingly, this repository does **NOT** contain:
+- `data/raw/` (raw webcam pose coordinate sequences)
+- `data/processed/` (engineered feature datasets and matrices)
+- `data/external/` (third-party benchmark files)
+
+### Running the Included Model vs. Retraining
+
+| Objective | Dataset Required? | Instructions |
+|:---|:---:|:---|
+| **Running the existing trained model** | ❌ **No** | The repository already includes the pre-trained deployment model (`models/final_deployment_model.pkl`), its feature schema (`models/final_feature_schema.json`), and the MediaPipe landmarker task. Any user can clone the repo, install requirements, and run the real-time webcam demo immediately without collecting any data. |
+| **Training or adapting a new model** | ✅ **Yes** | If you wish to retrain, fine-tune, or adapt the model to new subjects, specialized environments, or new activity classes, you will need to collect your own pose dataset using `src/collect_multisubject_data.py` and run the feature engineering and training pipeline. |
+
+> [!NOTE]
+> **Real-World Generalization Expectations:**
+> When running the included model with a live webcam, real-world performance on new, unseen subjects naturally varies depending on camera placement and angle, subject-to-camera distance, ambient lighting, clothing contrast, body proportions, and full-body landmark visibility. As demonstrated in our [LOSO evaluation](#-results-summary-subject-independent-loso), sitting generalizes with near-perfect fidelity (~99.8% F1), whereas discriminating between standing, walking, and running on unseen users is sensitive to individual gait velocity and lower-limb visibility.
 
 ---
 
@@ -134,42 +159,57 @@ Unlike random split evaluations that report artificial >95% accuracy due to temp
 
 ## 🚦 How to Run
 
-### 1. Run Data Quality Audit
-```powershell
-python src/audit_multisubject_dataset.py
-```
+### ⚡ Quick Start: Live Real-Time Prediction (No Dataset Collection Required)
 
-### 2. Run Feature Engineering Pipeline
-```powershell
-python src/multisubject_normalized_features.py
-```
+The repository comes pre-packaged with the trained deployment model (`models/final_deployment_model.pkl`), feature schema, and MediaPipe landmark task. You **do not** need to collect any data or run the training steps to use the live webcam application:
 
-### 3. Run Subject-Independent LOSO Evaluation
-```powershell
-python src/evaluate_loso.py
-```
+1. **Verify deployment pipeline integrity (no camera required):**
+   ```powershell
+   python src/live_prediction.py --verify
+   ```
 
-### 4. Run Error Diagnostics & ANOVA Shift Analysis
-```powershell
-python src/analyze_loso_errors.py
-```
+2. **Launch live real-time webcam prediction:**
+   ```powershell
+   python src/live_prediction.py
+   ```
+   - Press **`q`** to safely quit.
+   - Press **`r`** to reset the temporal buffer and smoothing history.
 
-### 5. Train the Final Deployment Model
-```powershell
-python src/train_final_model.py
-```
+---
 
-### 6. Verify Deployment Pipeline (No Camera Required)
-```powershell
-python src/live_prediction.py --verify
-```
+### 🔬 Research Pipeline Reproduction (Requires Local Dataset)
 
-### 7. Launch Live Real-Time Webcam Prediction
-```powershell
-python src/live_prediction.py
-```
-- Press **`q`** to safely quit.
-- Press **`r`** to reset temporal buffer and smoothing history.
+If you have collected your own dataset or wish to reproduce the data audit, feature extraction, LOSO cross-validation, and model training from scratch:
+
+1. **Collect Multi-Subject Pose Data:**
+   ```powershell
+   python src/collect_multisubject_data.py
+   ```
+
+2. **Run Data Quality Audit:**
+   ```powershell
+   python src/audit_multisubject_dataset.py
+   ```
+
+3. **Run Feature Engineering Pipeline (158 Features):**
+   ```powershell
+   python src/multisubject_normalized_features.py
+   ```
+
+4. **Run Subject-Independent LOSO Evaluation:**
+   ```powershell
+   python src/evaluate_loso.py
+   ```
+
+5. **Run Error Diagnostics & ANOVA Shift Analysis:**
+   ```powershell
+   python src/analyze_loso_errors.py
+   ```
+
+6. **Train the Final Deployment Model:**
+   ```powershell
+   python src/train_final_model.py
+   ```
 
 ---
 

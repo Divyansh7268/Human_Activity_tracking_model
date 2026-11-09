@@ -1,32 +1,4 @@
-"""
-src/multisubject_normalized_features.py
 
-Multi-Subject Feature Engineering Pipeline.
-
-Transforms data/raw/multisubject_pose_dataset.csv into:
-  data/processed/multisubject_normalized_temporal_features.csv
-
-Preserves complete research metadata:
-  subject_id, activity, activity_code, trial_id, sequence_id, frame_id, timestamp
-
-Feature representation:
-  - 150 Normalized Spatial Features:
-      * 99 Normalized landmark coordinates (centered at hip midpoint, divided by torso length)
-      * 10 Normalized body segment lengths (scaled by torso length)
-      *  8 Biomechanical joint angles (elbows, knees, shoulders, hips)
-      * 33 Landmark visibility confidence scores
-  - 8 Scale-Invariant Temporal Features:
-      * mean_landmark_displacement, max_landmark_displacement
-      * upper_body_movement, lower_body_movement
-      * left_side_movement, right_side_movement
-      * movement_speed, movement_acceleration
-  - Total ML features: 158
-  - Total dataset columns: 165 (7 metadata + 158 features)
-
-Temporal Calculation:
-  - Computed strictly WITHIN each sequence boundary (16 sequences).
-  - Drops exactly frame 0 of each sequence (16 boundary rows dropped).
-"""
 
 import os
 import sys

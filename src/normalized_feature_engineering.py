@@ -1,21 +1,3 @@
-"""
-src/normalized_feature_engineering.py
-
-Controlled Pose-Normalization Feature Engineering Pipeline.
-
-Transforms raw MediaPipe pose landmark data into normalized, scale- and
-translation-invariant biomechanical features:
-  - Reference origin: Hip midpoint (centers all body coordinates, eliminating translation)
-  - Reference scale: Torso length (shoulder midpoint to hip midpoint distance)
-  - Normalized landmark coordinates: (pt - hip_midpoint) / torso_length (33 * 3 = 99 features)
-  - Normalized body segment lengths: segment_distance / torso_length (10 features)
-  - Joint angles: Elbow, knee, shoulder, and hip angles in degrees (8 features)
-  - Landmark visibilities: Confidence scores from MediaPipe (33 features)
-  - Excluded: Raw absolute coordinates (landmark_i_x, landmark_i_y, landmark_i_z),
-    which depend directly on screen position and camera distance.
-
-Total normalized spatial features: 99 + 10 + 8 + 33 = 150 features (excluding activity).
-"""
 
 import numpy as np
 import pandas as pd
@@ -72,12 +54,7 @@ def get_point(df: pd.DataFrame, index: int) -> np.ndarray:
 
 
 def engineer_normalized_spatial_features(raw_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Generate translation- and scale-invariant spatial features from raw landmark dataframe.
 
-    Removes raw screen coordinates (landmark_{i}_x, y, z) to prevent the classifier
-    from memorizing subject position in the camera view.
-    """
     new_features = {}
 
     # 1. Reference Points: Hip Midpoint & Shoulder Midpoint

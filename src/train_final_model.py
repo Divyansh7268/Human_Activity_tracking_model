@@ -1,17 +1,3 @@
-"""
-Final Deployment Model Training
-================================
-Trains a Random Forest classifier on the COMPLETE multisubject dataset
-(all 4 subjects, all 4 activities).
-
-IMPORTANT DISCLAIMER:
-This model is trained on the full available dataset for deployment/demo purposes.
-Its training accuracy must NOT be interpreted as subject-independent generalization
-performance. Subject-independent (LOSO) performance is reported separately in:
-  results/loso_evaluation_report.txt
-
-Do NOT use this model's training metrics to claim generalization ability.
-"""
 
 import os
 import sys
@@ -25,9 +11,9 @@ from sklearn.metrics import (
     accuracy_score, classification_report, confusion_matrix
 )
 
-# ---------------------------------------------------------------------------
+
 # Paths
-# ---------------------------------------------------------------------------
+
 DATASET_PATH = "data/processed/multisubject_normalized_temporal_features.csv"
 MODEL_PATH   = "models/final_deployment_model.pkl"
 SCHEMA_PATH  = "models/final_feature_schema.json"
@@ -40,9 +26,8 @@ METADATA_COLS = [
 
 RF_PARAMS = dict(n_estimators=200, random_state=42, n_jobs=-1)
 
-# ---------------------------------------------------------------------------
+
 # Helpers
-# ---------------------------------------------------------------------------
 
 def log(msg: str) -> str:
     print(msg)
@@ -56,9 +41,9 @@ def section(title: str) -> str:
     return block
 
 
-# ---------------------------------------------------------------------------
+
 # Main
-# ---------------------------------------------------------------------------
+
 
 def main():
     lines = []  # collect report lines
@@ -70,9 +55,8 @@ def main():
     lines.append(log(f"Schema out: {SCHEMA_PATH}"))
     lines.append(log(f"Report out: {REPORT_PATH}"))
 
-    # ------------------------------------------------------------------
     # 1. Load dataset
-    # ------------------------------------------------------------------
+
     lines.append(section("1. LOADING DATASET"))
 
     if not os.path.exists(DATASET_PATH):
@@ -84,9 +68,9 @@ def main():
     lines.append(log(f"Subjects found: {sorted(df['subject_id'].unique())}"))
     lines.append(log(f"Activities    : {sorted(df['activity'].unique())}"))
 
-    # ------------------------------------------------------------------
+
     # 2. Extract features
-    # ------------------------------------------------------------------
+
     lines.append(section("2. FEATURE EXTRACTION"))
 
     feature_cols = [c for c in df.columns if c not in METADATA_COLS]
@@ -120,9 +104,9 @@ def main():
         sys.exit("ERROR: Feature matrix contains NaN or Inf values. Cannot train.")
     lines.append(log("NaN / Inf check passed ✓"))
 
-    # ------------------------------------------------------------------
+
     # 3. Train Random Forest
-    # ------------------------------------------------------------------
+
     lines.append(section("3. TRAINING RANDOM FOREST"))
     lines.append(log(f"Parameters: {RF_PARAMS}"))
     lines.append(log("Training on ALL subjects and ALL frames ..."))
@@ -132,9 +116,9 @@ def main():
 
     lines.append(log("Training complete ✓"))
 
-    # ------------------------------------------------------------------
+
     # 4. Training-set metrics  (for diagnostics only — NOT generalization)
-    # ------------------------------------------------------------------
+
     lines.append(section("4. TRAINING-SET DIAGNOSTICS (NOT generalization metrics)"))
 
     y_pred_train = rf.predict(X)
@@ -158,9 +142,9 @@ def main():
     for rank, idx in enumerate(top_idx, 1):
         lines.append(log(f"  {rank:2d}. {feature_cols[idx]:<45} {importances[idx]:.6f}"))
 
-    # ------------------------------------------------------------------
+
     # 5. Save model
-    # ------------------------------------------------------------------
+
     lines.append(section("5. SAVING MODEL AND SCHEMA"))
 
     os.makedirs("models", exist_ok=True)
@@ -187,9 +171,9 @@ def main():
         json.dump(schema, fh, indent=2)
     lines.append(log(f"Schema saved → {SCHEMA_PATH}"))
 
-    # ------------------------------------------------------------------
+
     # 6. Verification
-    # ------------------------------------------------------------------
+
     lines.append(section("6. VERIFICATION"))
 
     assert os.path.exists(MODEL_PATH),  "FAIL: model file missing"
@@ -212,9 +196,9 @@ def main():
     lines.append(log("schema n_features == 158 ✓"))
     lines.append(log(f"schema classes: {loaded_schema['classes']}"))
 
-    # ------------------------------------------------------------------
+
     # 7. Write report
-    # ------------------------------------------------------------------
+
     lines.append(section("7. WRITING REPORT"))
 
     report_text = "\n".join(

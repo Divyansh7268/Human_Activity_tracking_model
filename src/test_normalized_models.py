@@ -1,22 +1,3 @@
-"""
-src/test_normalized_models.py
-
-Controlled Pose-Normalization Experiment.
-Compares three feature representations under the exact same evaluation protocol:
-  A. Existing Spatial Features (unnormalized absolute + relative screen coordinates, 247 features)
-  B. Existing Spatial + Temporal Features (unnormalized spatial + 8 temporal features, 255 features)
-  C. Normalized Spatial + Temporal Features (scale- & translation-invariant, 158 features)
-
-Dataset & Protocol:
-  - Total samples: 792 rows (8 trial sequences x 99 frames)
-  - Train: 495 rows (5 sequences)
-  - Test: 297 rows (3 hold-out sequences: C1_S1_A6_T2 [walking], C1_S2_A7_T1 [standing], C1_S2_A8_T1 [sitting])
-  - Models: Logistic Regression & Random Forest (StandardScaler Pipeline, random_state=42)
-
-Outputs:
-  results/normalization_experiment.txt
-  results/normalization_comparison.png
-"""
 
 import os
 import numpy as np

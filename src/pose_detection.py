@@ -1,11 +1,3 @@
-"""
-Real-time pose detection using MediaPipe Pose Landmarker (Tasks API).
-
-Reads from the webcam, detects human pose landmarks on each frame,
-draws them, and shows the result live. Press 'q' to quit.
-
-Requires the model file at: models/pose_landmarker_full.task
-"""
 
 import sys
 import os

@@ -1,10 +1,3 @@
-"""
-Baseline Pose Classifier Training & Evaluation
-
-Loads the engineered feature dataset, trains two classifiers
-(Logistic Regression and Random Forest), evaluates them, compares results,
-and saves the best model as a Scikit-learn Pipeline.
-"""
 
 import os
 import joblib
@@ -38,7 +31,7 @@ RANDOM_STATE = 42
 ACTIVITY_CLASSES = ["running", "sitting", "standing", "walking"]
 
 
-# ─── Data Loading & Validation ───────────────────────────────────────────────
+# Data Loading & Validation 
 
 def load_dataset(path: str):
     """Load features.csv and return X (features) and y (labels)."""
@@ -69,7 +62,7 @@ def load_dataset(path: str):
     return X, y
 
 
-# ─── Metrics ─────────────────────────────────────────────────────────────────
+# Metrics 
 
 def evaluate_model(name: str, model, X_test, y_test) -> dict:
     """Evaluate a fitted model on the test set and print a classification report."""
@@ -99,7 +92,7 @@ def evaluate_model(name: str, model, X_test, y_test) -> dict:
     }
 
 
-# ─── Visualization ───────────────────────────────────────────────────────────
+# Visualization 
 
 def save_confusion_matrix(name: str, y_test, y_pred, filename: str) -> None:
     """Plot and save a confusion matrix for the given model."""
@@ -147,7 +140,7 @@ def save_f1_comparison_chart(results: list[dict], filename: str) -> None:
     print(f"Saved F1 comparison chart: {filename}")
 
 
-# ─── Main Training Pipeline ──────────────────────────────────────────────────
+#  Main Training Pipeline 
 
 def main():
     os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -165,7 +158,7 @@ def main():
     print(f"\nTrain samples : {len(X_train)}")
     print(f"Test samples  : {len(X_test)}")
 
-    # ─── Model 1: Logistic Regression ──────────────────────────────────────
+    # Model 1: Logistic Regression 
     # Wrapped in a Pipeline so the scaler is fitted only on training data
     lr_pipeline = Pipeline([
         ("scaler", StandardScaler()),

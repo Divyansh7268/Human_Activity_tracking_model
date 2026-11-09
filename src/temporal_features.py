@@ -1,29 +1,4 @@
-"""
-Temporal Feature Engineering
 
-Calculates frame-to-frame movement dynamics from consecutive pose frames
-to distinguish static activities (standing, sitting) from dynamic activities (walking, running).
-
-Temporal Features Generated:
-  - mean_landmark_displacement : Mean Euclidean displacement across all 33 landmarks
-  - max_landmark_displacement  : Maximum displacement observed among landmarks
-  - upper_body_movement        : Mean displacement for head, shoulders, arms, hands (landmarks 0-22)
-  - lower_body_movement        : Mean displacement for hips, knees, ankles, feet (landmarks 23-32)
-  - left_side_movement         : Mean displacement of left-side body landmarks
-  - right_side_movement        : Mean displacement of right-side body landmarks
-  - movement_speed             : Displacement divided by sampling time interval (dt ~ 0.15s)
-  - movement_acceleration      : Magnitude of change in speed divided by dt
-
-Methodology:
-  - Segments raw data into continuous activity recording blocks.
-  - Computes motion dynamics strictly WITHIN continuous blocks.
-  - Avoids artificial jumps across class transitions by omitting the boundary frame.
-  - Combines all 247 baseline single-frame features with the new 8 temporal features.
-
-Outputs:
-  - data/processed/temporal_features.csv
-  - results/temporal_movement_distribution.png
-"""
 
 import os
 import numpy as np

@@ -1,18 +1,3 @@
-"""
-UP-Fall Dataset Adapter Module
-
-Transforms UP-Fall 3D skeleton trial CSV files into the standardized
-33-landmark representation used by the Human Activity Recognition pipeline.
-
-Selected Activities:
-  - A6 -> walking
-  - A7 -> standing
-  - A8 -> sitting
-
-Outputs:
-  - data/processed/upfall_pose_dataset.csv
-  - results/upfall_integration_report.txt
-"""
 
 import os
 import re
@@ -64,10 +49,7 @@ def parse_filename_metadata(filename: str) -> dict | None:
 
 
 def map_upfall_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Map UP-Fall columns (Joint1_X ... Joint33_Z) to standard project landmark names
-    (landmark_0_x ... landmark_32_z) and inject default visibility scores.
-    """
+
     mapped_dict = {}
 
     # Extract 3D coordinates for all 33 joints
@@ -86,10 +68,7 @@ def map_upfall_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_and_standardize_upfall(raw_dir: str = UPFALL_RAW_DIR) -> pd.DataFrame:
-    """
-    Read UP-Fall CSV files, filter target activities (A6, A7, A8),
-    standardize coordinates and metadata, and return combined DataFrame.
-    """
+
     csv_files = sorted(glob.glob(os.path.join(raw_dir, "*.csv")))
     if not csv_files:
         raise FileNotFoundError(f"No CSV files found in {raw_dir}")
@@ -149,7 +128,7 @@ def load_and_standardize_upfall(raw_dir: str = UPFALL_RAW_DIR) -> pd.DataFrame:
 
 
 def validate_standardized_dataset(df: pd.DataFrame) -> dict:
-    """Run integrity and sanity checks on standardized dataset."""
+
     if df.empty:
         return {"valid": False, "reason": "Dataset is empty."}
 
@@ -188,7 +167,7 @@ def validate_standardized_dataset(df: pd.DataFrame) -> dict:
 
 
 def test_pipeline_compatibility(df: pd.DataFrame) -> dict:
-    """Test compatibility with existing feature_engineering and temporal_features modules."""
+
     from feature_engineering import engineer_features
     from temporal_features import compute_sequence_temporal_features, extract_3d_coordinates
 
