@@ -1,0 +1,117 @@
+================================================================================
+SUBJECT-INDEPENDENT EVALUATION READINESS REPORT
+================================================================================
+
+1. EXECUTIVE SUMMARY & READINESS VERDICT
+--------------------------------------------------------------------------------
+Subject-Independent Evaluation Readiness: NOT READY / CANNOT BE PERFORMED
+
+Methodological Rule:
+  A subject-independent evaluation (e.g. Leave-One-Subject-Out or GroupKFold)
+  requires at least 3 distinct subjects with full or representative class
+  coverage. The current UP-Fall ADL dataset contains only 2 subjects, with
+  severe class imbalance across subjects (Subject 2 has 0 walking samples).
+  
+  Performing a subject-independent evaluation under these conditions would
+  violate scientific validity. In adherence to research integrity guidelines:
+  - No fake folds were created.
+  - No subject data was duplicated or fabricated.
+  - The evaluation was halted, and readiness limitations are documented below.
+
+--------------------------------------------------------------------------------
+2. CURRENT SUBJECT & SEQUENCE METRICS
+--------------------------------------------------------------------------------
+Source Dataset:
+  - data/processed/upfall_pose_dataset.csv (800 rows, 139 columns)
+  - data/processed/upfall_normalized_temporal_features.csv (792 rows, 159 columns)
+
+Subject Breakdown:
+  Total Genuine Subjects Present : 2 (Subject 1, Subject 2)
+  Total Trial Sequences Present  : 8 sequences (100 frames each in raw pose, 99 in temporal)
+  Total Frames (Raw Pose)        : 800 frames
+  Total Frames (Temporal)        : 792 frames
+
+Subject 1 Distribution (6 sequences, 600 raw frames / 594 temporal frames):
+  • C1_S1_A6_T1 : 100 frames (99 temporal) | Activity: walking (A6)
+  • C1_S1_A6_T2 : 100 frames (99 temporal) | Activity: walking (A6)
+  • C1_S1_A7_T1 : 100 frames (99 temporal) | Activity: standing (A7)
+  • C1_S1_A7_T2 : 100 frames (99 temporal) | Activity: standing (A7)
+  • C1_S1_A8_T1 : 100 frames (99 temporal) | Activity: sitting (A8)
+  • C1_S1_A8_T2 : 100 frames (99 temporal) | Activity: sitting (A8)
+  Activities Available for Subject 1: walking (200 frames), standing (200 frames), sitting (200 frames)
+
+Subject 2 Distribution (2 sequences, 200 raw frames / 198 temporal frames):
+  • C1_S2_A7_T1 : 100 frames (99 temporal) | Activity: standing (A7)
+  • C1_S2_A8_T1 : 100 frames (99 temporal) | Activity: sitting (A8)
+  Activities Available for Subject 2: standing (100 frames), sitting (100 frames), walking (0 frames)
+
+--------------------------------------------------------------------------------
+3. METADATA PRESERVATION AUDIT
+--------------------------------------------------------------------------------
+• upfall_pose_dataset.csv:
+  - Subject ID  : YES ('subject_id', integer 1 or 2)
+  - Sequence ID : YES ('sequence_id', e.g., 'C1_S1_A6_T1')
+  - Camera ID   : YES ('camera_id', integer 1)
+  - Activity ID : YES ('activity_code', integer 6, 7, or 8)
+  - Trial ID    : YES ('trial_id', integer 1 or 2)
+  - Frame ID    : YES ('frame_id', integer 0 to 99)
+  - Activity Name: YES ('activity', 'walking', 'standing', 'sitting')
+
+• upfall_normalized_temporal_features.csv:
+  - Retains 158 normalized features + 1 'activity' label (159 columns).
+  - Explicit 'subject_id' and 'sequence_id' columns were stripped during feature
+    generation, but sequence order is preserved identically (99 frames per sequence,
+    8 sequences in sorted alphanumeric order matching upfall_pose_dataset.csv).
+
+• Audit of Previous Split in src/test_normalized_models.py:
+  - The split was sequence-based: complete trials were held out.
+  - Test sequences: C1_S1_A6_T2 (Subject 1), C1_S2_A7_T1 (Subject 2), C1_S2_A8_T1 (Subject 2).
+  - Train sequences: C1_S1_A6_T1, C1_S1_A7_T1, C1_S1_A7_T2, C1_S1_A8_T1, C1_S1_A8_T2 (all Subject 1).
+  - FINDING: Subject 1 was present in BOTH training and testing sets.
+    Because Subject 2 had zero walking trials, Subject 1's walking trial (C1_S1_A6_T2)
+    had to be used in the test set, creating a subject overlap between train and test.
+    Therefore, prior experiments were SEQUENCE-INDEPENDENT, but NOT SUBJECT-INDEPENDENT.
+
+--------------------------------------------------------------------------------
+4. EXACT METHODOLOGICAL LIMITATIONS
+--------------------------------------------------------------------------------
+1. Sample Size Limitation (N=2):
+   Evaluating cross-subject generalization with N=2 provides 0 degrees of freedom
+   for statistical validation. Any fold division would result in a single training
+   subject and a single testing subject.
+
+2. Complete Absence of Class in Subject 2:
+   Subject 2 contains zero walking trials. If Subject 2 is held out as the test set:
+   - The test set contains only standing and sitting (walking recall cannot be tested).
+   If Subject 1 is held out as the test set:
+   - The training set contains only Subject 2 (standing and sitting), meaning the model
+     is never trained on walking and cannot predict walking.
+
+3. External Dataset Scope:
+   The published UP-Fall 3D Skeleton CSV dataset (Zenodo/GitHub) contains only fall
+   scenarios (A1-A5). Activities of Daily Living (A6 walking, A7 standing, A8 sitting)
+   were not pre-extracted in the public repository for all subjects. The 8 ADL files
+   currently in the pipeline were created to validate the data ingestion adapter.
+
+--------------------------------------------------------------------------------
+5. RECOMMENDED NEXT DATA REQUIREMENTS
+--------------------------------------------------------------------------------
+To conduct a statistically valid subject-independent evaluation:
+
+Requirement 1: Minimum of 5 to 10 Distinct Subjects
+  - Each subject must perform all target activities (standing, sitting, walking, running).
+  - Enables Leave-One-Subject-Out Cross-Validation (LOSO-CV) or 5-Fold GroupKFold.
+
+Requirement 2: Full Class Balance Per Subject
+  - Every subject must have at least 1-2 trials of every target class to avoid
+    zero-support classes during holdout evaluation.
+
+Requirement 3: Explicit Subject Metadata in Processed Datasets
+  - Feature CSVs should retain 'subject_id' and 'sequence_id' as non-training metadata
+    columns to enable automated GroupKFold(groups=df['subject_id']).
+
+Conclusion:
+  Subject-independent evaluation is deferred until a multi-subject dataset
+  (>=3 subjects, all classes represented) is acquired or recorded.
+================================================================================
+

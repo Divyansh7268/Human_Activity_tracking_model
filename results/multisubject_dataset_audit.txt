@@ -1,0 +1,107 @@
+=====================================================================================
+STEP 12: MULTI-SUBJECT DATASET QUALITY AUDIT REPORT
+=====================================================================================
+Target File: data/raw/multisubject_pose_dataset.csv
+
+─────────────────────────────────────────────────────────────────────────────────────
+1. BASIC DATASET CHECK
+─────────────────────────────────────────────────────────────────────────────────────
+Total Rows (Frames)            : 21227
+Total Columns                  : 139 (Expected: 139)
+Unique Subjects (4)           : S01, S02, S03, S04
+Unique Activities (4)         : running, sitting, standing, walking
+Unique Trials (1)             : [1]
+Unique Sequence IDs (16)      : 16
+
+Frames and Sequences per Subject:
+  Subject ID   | Sequences  | Frames     | % of Dataset
+  ----------------------------------------------------
+  S01          | 4          | 5552       |  26.16%
+  S02          | 4          | 4902       |  23.09%
+  S03          | 4          | 5442       |  25.64%
+  S04          | 4          | 5331       |  25.11%
+
+Frames and Sequences per Activity:
+  Activity     | Sequences  | Frames     | % of Dataset
+  ----------------------------------------------------
+  standing     | 4          | 5464       |  25.74%
+  sitting      | 4          | 5350       |  25.20%
+  walking      | 4          | 5434       |  25.60%
+  running      | 4          | 4979       |  23.46%
+
+─────────────────────────────────────────────────────────────────────────────────────
+2. SUBJECT × ACTIVITY COVERAGE MATRIX
+─────────────────────────────────────────────────────────────────────────────────────
+Subject    | Standing           | Sitting            | Walking            | Running           
+-------------------------------------------------------------------------------------
+S01        | 1 seq (1633 fr)    | 1 seq (1497 fr)    | 1 seq (1258 fr)    | 1 seq (1164 fr)   
+S02        | 1 seq (1225 fr)    | 1 seq (1427 fr)    | 1 seq (1080 fr)    | 1 seq (1170 fr)   
+S03        | 1 seq (1288 fr)    | 1 seq (1380 fr)    | 1 seq (1468 fr)    | 1 seq (1306 fr)   
+S04        | 1 seq (1318 fr)    | 1 seq (1046 fr)    | 1 seq (1628 fr)    | 1 seq (1339 fr)   
+-------------------------------------------------------------------------------------
+Coverage Verification: PERFECT (100% of subjects have all 4 target activities).
+
+─────────────────────────────────────────────────────────────────────────────────────
+3. SEQUENCE INTEGRITY & SEQUENCE-BY-SEQUENCE AUDIT
+─────────────────────────────────────────────────────────────────────────────────────
+Sequence ID          | Subj  | Activity  | Tr  | Frames  | Duration  | Frame IDs   | Time Incs? | Valid % 
+------------------------------------------------------------------------------------------------
+S01_RUNNING_T01      | S01   | running   | 1   | 1164    |  56.51s   | 0..N-1 OK   | YES        | 100.0%
+S01_SITTING_T01      | S01   | sitting   | 1   | 1497    |  71.79s   | 0..N-1 OK   | YES        | 100.0%
+S01_STANDING_T01     | S01   | standing  | 1   | 1633    |  80.00s   | 0..N-1 OK   | YES        | 100.0%
+S01_WALKING_T01      | S01   | walking   | 1   | 1258    |  61.55s   | 0..N-1 OK   | YES        | 100.0%
+S02_RUNNING_T01      | S02   | running   | 1   | 1170    |  59.61s   | 0..N-1 OK   | YES        | 100.0%
+S02_SITTING_T01      | S02   | sitting   | 1   | 1427    |  68.21s   | 0..N-1 OK   | YES        | 100.0%
+S02_STANDING_T01     | S02   | standing  | 1   | 1225    |  62.07s   | 0..N-1 OK   | YES        | 100.0%
+S02_WALKING_T01      | S02   | walking   | 1   | 1080    |  62.04s   | 0..N-1 OK   | YES        | 100.0%
+S03_RUNNING_T01      | S03   | running   | 1   | 1306    |  70.65s   | 0..N-1 OK   | YES        | 100.0%
+S03_SITTING_T01      | S03   | sitting   | 1   | 1380    |  65.67s   | 0..N-1 OK   | YES        | 100.0%
+S03_STANDING_T01     | S03   | standing  | 1   | 1288    |  61.34s   | 0..N-1 OK   | YES        | 100.0%
+S03_WALKING_T01      | S03   | walking   | 1   | 1468    |  73.09s   | 0..N-1 OK   | YES        | 100.0%
+S04_RUNNING_T01      | S04   | running   | 1   | 1339    |  66.92s   | 0..N-1 OK   | YES        | 100.0%
+S04_SITTING_T01      | S04   | sitting   | 1   | 1046    |  51.76s   | 0..N-1 OK   | YES        | 100.0%
+S04_STANDING_T01     | S04   | standing  | 1   | 1318    |  65.98s   | 0..N-1 OK   | YES        | 100.0%
+S04_WALKING_T01      | S04   | walking   | 1   | 1628    |  80.40s   | 0..N-1 OK   | YES        | 100.0%
+------------------------------------------------------------------------------------------------
+Sequence Integrity Verification: ALL 16 SEQUENCES PASSED (100% valid structure).
+
+─────────────────────────────────────────────────────────────────────────────────────
+4. NUMERICAL & ANATOMICAL DATA QUALITY
+─────────────────────────────────────────────────────────────────────────────────────
+Total Missing / NaN Values      : 0
+Total Infinite Values (Inf)     : 0
+Exact Duplicate Rows            : 0
+Inconsistent Sequence ID Mappings: 0
+Duplicate (Subject, Act, Trial) : 0
+X coordinate range [min, max]   : [0.3700, 1.0353]
+Y coordinate range [min, max]   : [-0.2497, 1.3902]
+Z coordinate range [min, max]   : [-1.5436, 0.8402]
+Visibility range   [min, max]   : [0.0165, 1.0000]
+Invalid Visibility Scores (<0 or >1): 0
+Frames per Sequence [min, max]  : [1046, 1633]
+Average Frames per Sequence     : 1326.7 frames
+Average Sequence Duration       : 66.10 seconds
+
+─────────────────────────────────────────────────────────────────────────────────────
+5. DETECTED PROBLEMS & OBSERVATIONS
+─────────────────────────────────────────────────────────────────────────────────────
+Observations:
+  • Every subject (S01, S02, S03, S04) has exactly 1 trial for each of the 4 activities.
+  • Total sequences: 4 subjects x 4 activities = 16 distinct sequences.
+  • Each sequence has high sample density (>500 frames, average ~1326 frames per sequence).
+  • Total dataset size: 21,227 frames across 4 distinct individuals.
+
+Problems Detected: NONE. Zero data quality defects found.
+
+─────────────────────────────────────────────────────────────────────────────────────
+6. FEATURE ENGINEERING READINESS VERDICT
+─────────────────────────────────────────────────────────────────────────────────────
+Verdict: READY_FOR_FEATURE_ENGINEERING
+Reasoning:
+  1. 100% balanced subject x activity grid (4 subjects x 4 activities).
+  2. Zero missing, NaN, infinite, or corrupted landmark values.
+  3. Frame IDs strictly sequential starting at 0 for every sequence.
+  4. Timestamps strictly monotonically increasing per sequence.
+  5. Large frame volume (21,227 frames) provides robust statistical support.
+
+=====================================================================================

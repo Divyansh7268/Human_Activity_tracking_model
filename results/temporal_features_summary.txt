@@ -1,0 +1,99 @@
+================================================================================
+TEMPORAL FEATURE ENGINEERING SUMMARY REPORT (STEP 7)
+================================================================================
+
+1. OVERVIEW & OBJECTIVE
+--------------------------------------------------------------------------------
+The purpose of Step 7 was to augment the single-frame pose representation with
+frame-to-frame temporal movement dynamics. In static single-frame space, standing
+and walking are geometrically ambiguous. Adding velocity, displacement, and
+acceleration gives the classifier the ability to distinguish whether a subject
+is holding still or actively in motion.
+
+
+2. TEMPORAL FEATURES CREATED
+--------------------------------------------------------------------------------
+Eight dynamic movement features were calculated from 3D Euclidean displacements:
+
+1. mean_landmark_displacement : Mean displacement across all 33 MediaPipe landmarks.
+2. max_landmark_displacement  : Peak displacement among any single landmark.
+3. upper_body_movement        : Mean displacement of head, shoulders, arms, hands (indices 0-22).
+4. lower_body_movement        : Mean displacement of hips, knees, ankles, feet (indices 23-32).
+5. left_side_movement         : Mean displacement across all 16 left-side landmarks.
+6. right_side_movement        : Mean displacement across all 16 right-side landmarks.
+7. movement_speed             : Landmark velocity in coordinate units per second (disp / dt, dt = 0.15s).
+8. movement_acceleration      : Rate of change of movement speed (delta_speed / dt).
+
+
+3. MATHEMATICAL CALCULATION METHODOLOGY
+--------------------------------------------------------------------------------
+- Landmark coordinates were extracted for each frame as 3D points p_i(t) = (x, y, z).
+- Euclidean displacement for landmark i between consecutive frames:
+    d_i(t) = sqrt((x_i(t) - x_i(t-1))^2 + (y_i(t) - y_i(t-1))^2 + (z_i(t) - z_i(t-1))^2)
+- Speed was scaled by the 150 ms sampling interval:
+    speed(t) = mean_displacement(t) / 0.15
+- Acceleration was calculated as the magnitude of velocity change:
+    acceleration(t) = |speed(t) - speed(t-1)| / 0.15
+
+
+4. SEQUENCE & FRAME ORDERING VERIFICATION
+--------------------------------------------------------------------------------
+- Explicit Metadata Check:
+  The raw CSV (data/raw/pose_dataset.csv) does NOT contain explicit metadata columns
+  such as 'timestamp', 'frame_id', or 'session_id'.
+- Physical Sequence Verification:
+  Analysis of row transitions revealed that the dataset consists of 4 unbroken,
+  contiguous blocks:
+    * Block 1: standing (rows 0-445, 446 frames)
+    * Block 2: sitting  (rows 446-952, 507 frames)
+    * Block 3: walking  (rows 953-1173, 221 frames)
+    * Block 4: running  (rows 1174-1297, 124 frames)
+  Because data was recorded in real time with a fixed 150 ms sample interval,
+  rows WITHIN each block are strictly chronological and sequential.
+- Sequence Boundary Handling:
+  To prevent calculating invalid artificial jumps between different activities,
+  displacements were computed strictly WITHIN each block. The initial boundary frame
+  of each block was omitted (4 rows dropped in total), leaving 1,294 clean samples
+  with valid temporal derivatives.
+
+
+5. STANDING VS. WALKING SEPARATION ANALYSIS
+--------------------------------------------------------------------------------
+Standing and walking became substantially distinguishable:
+
+* Lower-Body Movement:
+  - Standing Mean: 0.0189 (std: 0.0277)
+  - Walking Mean : 0.0647 (std: 0.0769)
+  - Difference   : 3.42x higher in walking (Cohen's d = 0.792)
+
+* Overall Movement Speed:
+  - Standing Mean: 0.1760 units/s (std: 0.2797)
+  - Walking Mean : 0.5513 units/s (std: 0.6431)
+  - Difference   : 3.13x higher in walking (Cohen's d = 0.757)
+
+* Movement Acceleration:
+  - Standing Mean: 0.6475 units/s^2 (std: 1.3396)
+  - Walking Mean : 2.3650 units/s^2 (std: 3.8072)
+  - Difference   : 3.65x higher in walking (Cohen's d = 0.602)
+
+
+6. LIMITATIONS & ISSUES TO ADDRESS BEFORE RETRAINING
+--------------------------------------------------------------------------------
+1. No Session ID in Collector:
+   If future datasets are collected across multiple sessions or non-contiguous
+   recordings, collect_pose_data.py must be updated to store a session_id or timestamp.
+2. Real-Time Streaming State:
+   In live prediction, the classifier will require state (caching the previous frame's
+   landmarks and previous speed) to compute these 8 temporal features on the fly.
+3. Outlier/Spike Filtering:
+   Occasional tracking jumps in MediaPipe (e.g. foot occlusion) cause brief speed spikes.
+   A rolling average or median filter will ensure smooth live speed estimation.
+
+
+7. OUTPUT ARTIFACTS
+--------------------------------------------------------------------------------
+- Dataset: data/processed/temporal_features.csv (1,294 rows, 256 columns)
+  (247 single-frame features + 8 temporal features + 1 activity label)
+- Visual Chart: results/temporal_movement_distribution.png
+================================================================================
+

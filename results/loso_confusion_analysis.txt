@@ -1,0 +1,53 @@
+================================================================================
+TASK 2: LEAVE-ONE-SUBJECT-OUT (LOSO) CONFUSION ANALYSIS
+================================================================================
+Total Evaluated Predictions: 21,211 frames across 4 unseen subjects
+
+Overall Key Confusion Pairs (True Activity -> Predicted Activity):
+Confusion Pair               | Errors (Frames) | % of Class Samples   | % of Total Dataset
+----------------------------------------------------------------------------------------
+standing -> walking          | 1,789           |  32.77%              |   8.43%
+standing -> running          | 1,692           |  30.99%              |   7.98%
+walking -> standing          | 643             |  11.84%              |   3.03%
+walking -> running           | 1,351           |  24.88%              |   6.37%
+running -> walking           | 1,234           |  24.80%              |   5.82%
+running -> standing          | 503             |  10.11%              |   2.37%
+----------------------------------------------------------------------------------------
+
+Subject-by-Subject Breakdown of Critical Confusions:
+Subject  | True Act  | Total Frames  | Pred: Standing  | Pred: Sitting   | Pred: Walking   | Pred: Running  
+----------------------------------------------------------------------------------------------
+S01      | standing  | 1,632         |     5 (  0.3%) |     0 (  0.0%) |   307 ( 18.8%) |  1320 ( 80.9%)
+S01      | sitting   | 1,496         |     0 (  0.0%) |  1485 ( 99.3%) |    11 (  0.7%) |     0 (  0.0%)
+S01      | walking   | 1,257         |   165 ( 13.1%) |     5 (  0.4%) |   760 ( 60.5%) |   327 ( 26.0%)
+S01      | running   | 1,163         |   100 (  8.6%) |    10 (  0.9%) |   296 ( 25.5%) |   757 ( 65.1%)
+----------------------------------------------------------------------------------------------
+S02      | standing  | 1,224         |   554 ( 45.3%) |     0 (  0.0%) |   615 ( 50.2%) |    55 (  4.5%)
+S02      | sitting   | 1,426         |     0 (  0.0%) |  1426 (100.0%) |     0 (  0.0%) |     0 (  0.0%)
+S02      | walking   | 1,079         |    65 (  6.0%) |     0 (  0.0%) |   909 ( 84.2%) |   105 (  9.7%)
+S02      | running   | 1,169         |    73 (  6.2%) |     0 (  0.0%) |   194 ( 16.6%) |   902 ( 77.2%)
+----------------------------------------------------------------------------------------------
+S03      | standing  | 1,287         |   279 ( 21.7%) |     0 (  0.0%) |   712 ( 55.3%) |   296 ( 23.0%)
+S03      | sitting   | 1,379         |     0 (  0.0%) |  1379 (100.0%) |     0 (  0.0%) |     0 (  0.0%)
+S03      | walking   | 1,467         |    60 (  4.1%) |     0 (  0.0%) |   772 ( 52.6%) |   635 ( 43.3%)
+S03      | running   | 1,305         |    43 (  3.3%) |     0 (  0.0%) |   477 ( 36.6%) |   785 ( 60.2%)
+----------------------------------------------------------------------------------------------
+S04      | standing  | 1,317         |  1141 ( 86.6%) |     0 (  0.0%) |   155 ( 11.8%) |    21 (  1.6%)
+S04      | sitting   | 1,045         |     0 (  0.0%) |  1045 (100.0%) |     0 (  0.0%) |     0 (  0.0%)
+S04      | walking   | 1,627         |   353 ( 21.7%) |     0 (  0.0%) |   990 ( 60.8%) |   284 ( 17.5%)
+S04      | running   | 1,338         |   287 ( 21.4%) |     0 (  0.0%) |   267 ( 20.0%) |   784 ( 58.6%)
+----------------------------------------------------------------------------------------------
+
+CRITICAL CONFUSION FINDINGS:
+  1. S01 Standing Collapse:
+     Out of 1,632 standing frames in S01, exactly 1,320 (80.9%) were predicted as RUNNING
+     and 307 (18.8%) as WALKING. Only 5 frames (0.3%) were correctly predicted as standing!
+  2. S03 Standing Misclassification:
+     Out of 1,287 standing frames in S03, 712 (55.3%) were predicted as WALKING and
+     296 (23.0%) as RUNNING. Only 279 frames (21.7%) were recognized as standing.
+  3. Locomotion Boundary Overlap (Walking <-> Running):
+     Across all subjects, 1,351 walking frames (24.9%) were misclassified as running,
+     and 1,034 running frames (20.8%) were misclassified as walking.
+  4. Sitting Isolation:
+     Sitting experienced essentially ZERO confusion with any locomotion activity.
+================================================================================

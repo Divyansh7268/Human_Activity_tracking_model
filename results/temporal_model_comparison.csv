@@ -1,0 +1,5 @@
+Model,Feature Type,Accuracy,Precision,Recall,F1 Score,Standing F1,Walking F1
+Logistic Regression (Baseline Single-Frame),Single-Frame (247 features),0.9769,0.9776,0.9769,0.9765,0.9886,0.9556
+Random Forest (Baseline Single-Frame),Single-Frame (247 features),0.9846,0.9849,0.9846,0.9847,0.9886,0.9778
+Temporal Logistic Regression,Spatial + Temporal (255 features),0.9653,0.9658,0.9653,0.9653,0.9775,0.9111
+Temporal Random Forest,Spatial + Temporal (255 features),0.9768,0.9781,0.9768,0.9771,0.977,0.9451

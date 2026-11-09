@@ -1,0 +1,130 @@
+================================================================================
+RESEARCH PROTOCOL: MULTI-SUBJECT HUMAN ACTIVITY RECOGNITION DATASET
+================================================================================
+
+1. PROJECT & RESEARCH OBJECTIVE
+--------------------------------------------------------------------------------
+This protocol defines the standardized data collection procedure for building a
+multi-subject 3D human pose dataset to enable rigorous, statistically valid
+Subject-Independent Evaluation (e.g. Leave-One-Subject-Out Cross-Validation).
+
+Dataset Storage:
+  data/raw/multisubject_pose_dataset.csv
+
+--------------------------------------------------
+2. TARGET ACTIVITIES
+--------------------------------------------------
+Four core everyday and locomotion activities:
+  1. standing (activity_code = 1): Natural upright stance, arms relaxed or shifting.
+  2. sitting  (activity_code = 2): Seated upright in chair, feet grounded.
+  3. walking  (activity_code = 3): Continuous walking back and forth or in place.
+  4. running  (activity_code = 4): Jogging in place or running across camera view.
+
+Target Sample Size:
+  - Minimum 5 distinct subjects (S01, S02, S03, S04, S05, ...).
+  - Minimum 3 trials per activity per subject.
+  - Recommended minimum dataset: 5 subjects x 4 activities x 3 trials = 60 sequences.
+
+--------------------------------------------------
+3. METADATA SCHEMA (139 COLUMNS PER ROW)
+--------------------------------------------------
+Every recorded frame stores 7 metadata attributes followed by 33 MediaPipe landmarks:
+
+[Columns 1-7]: Metadata
+  1. subject_id    : Standardized identifier (e.g., 'S01', 'S02')
+  2. activity      : Activity name string ('standing', 'sitting', 'walking', 'running')
+  3. activity_code : Integer code (1, 2, 3, or 4)
+  4. trial_id      : Positive integer trial counter (1, 2, 3...)
+  5. sequence_id   : Unique composite ID (e.g., 'S01_WALKING_T01')
+  6. frame_id      : Sequential frame index restarting at 0 for every sequence
+  7. timestamp     : Elapsed recording time in seconds from sequence start
+
+[Columns 8-139]: 33 Body Landmarks x 4 Attributes
+  - landmark_{0..32}_x          : Normalized horizontal coordinate in [0.0, 1.0]
+  - landmark_{0..32}_y          : Normalized vertical coordinate in [0.0, 1.0]
+  - landmark_{0..32}_z          : Relative depth coordinate from MediaPipe
+  - landmark_{0..32}_visibility : Landmark detection visibility confidence in [0.0, 1.0]
+
+--------------------------------------------------
+4. IDENTIFIER FORMATS & CONVENTIONS
+--------------------------------------------------
+• Subject ID Format:
+  - Pattern: S<two_digit_number> (e.g., S01, S02, S03... S10).
+  - A subject must retain the identical subject_id across all their activity sessions.
+
+• Trial Format:
+  - Integer starting from 1 (1, 2, 3...).
+  - Each recording of the same activity by the same subject is assigned a unique trial number.
+
+• Sequence ID Format:
+  - Pattern: {subject_id}_{activity.upper()}_T{trial_id:02d}
+  - Examples:
+    * S01_STANDING_T01
+    * S01_WALKING_T02
+    * S02_SITTING_T01
+    * S03_RUNNING_T03
+  - Guarantees uniqueness and instant human-interpretability.
+
+--------------------------------------------------
+5. RECORDING PROCEDURE
+--------------------------------------------------
+For each recording session:
+  Step 1: Execute `python src/collect_multisubject_data.py`.
+  Step 2: Enter Subject ID (e.g. S01).
+  Step 3: Select target activity (1=standing, 2=sitting, 3=walking, 4=running).
+  Step 4: Confirm or enter Trial number (script suggests the next available trial).
+  Step 5: Prepare position during the visual 3-second countdown (3, 2, 1).
+  Step 6: Perform the target activity naturally in view of the webcam.
+  Step 7: Press 'q' or SPACE to finish recording.
+  Step 8: Review summary metrics (frames, detection rate) and confirm saving.
+  Step 9: Proceed to next trial or switch subject.
+
+--------------------------------------------------
+6. DATA QUALITY & INTEGRITY RULES
+--------------------------------------------------
+• Rule 1 (Minimum Duration):
+  Each sequence must contain at least 50 valid pose frames (~2-3 seconds minimum).
+  Sequences with < 50 frames are flagged and prompted for rejection/re-recording.
+
+• Rule 2 (Detection Rate Quality Target):
+  Pose detection rate should be >= 80%. If < 80%, a warning is displayed regarding
+  possible camera occlusion or adverse lighting.
+
+• Rule 3 (No Silent Duplication):
+  If a sequence with the same subject_id, activity, and trial_id already exists in the CSV,
+  the collector explicitly prompts whether to overwrite or cancel. It never silently duplicates.
+
+• Rule 4 (Monotonic Continuity):
+  Frame IDs must strictly increment (0, 1, 2, 3...) with no gaps or jumps within each sequence.
+
+--------------------------------------------------
+7. DATASET AUDIT & VERIFICATION
+--------------------------------------------------
+Run:
+  python src/inspect_multisubject_dataset.py
+
+This generates:
+  - results/multisubject_dataset_report.txt
+  - results/multisubject_activity_distribution.png
+
+It verifies:
+  - Total frame and sequence counts per subject and per activity.
+  - Zero missing values (NaN/Inf).
+  - Subject coverage across all 4 activities.
+  - Frame continuity integrity.
+
+--------------------------------------------------
+8. SUBJECT-INDEPENDENT EVALUATION PLAN
+--------------------------------------------------
+Once data for >= 5 subjects is recorded:
+  1. Feature Engineering:
+     Run `normalized_feature_engineering.py` (scale- and translation-invariant features).
+  2. Temporal Feature Extraction:
+     Compute 8 temporal features strictly within each trial sequence boundary.
+  3. Validation Scheme:
+     - Leave-One-Subject-Out Cross-Validation (LOSO-CV):
+       Train on (N-1) subjects, test on the held-out subject. Repeat for all N subjects.
+     - GroupKFold(n_splits=5, groups=df['subject_id']):
+       Guarantees zero subject leakage across train and test folds.
+================================================================================
+

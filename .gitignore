@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# Environment and Local Settings
+.env
+.vscode/
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Temporary / Log files
+*.log
+*.tmp
+.cache/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local datasets - not committed to GitHub
+data/raw/
+data/processed/
+data/external/
+
+# Old experimental models
+models/activity_classifier.pkl
+models/temporal_activity_classifier.pkl
+models/upfall_temporal_classifier_test.pkl

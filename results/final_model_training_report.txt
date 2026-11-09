@@ -1,0 +1,115 @@
+
+============================================================
+STEP 16 — FINAL DEPLOYMENT MODEL TRAINING
+============================================================
+Timestamp : 2026-11-09T11:35:26.596603
+Dataset   : data/processed/multisubject_normalized_temporal_features.csv
+Model out : models/final_deployment_model.pkl
+Schema out: models/final_feature_schema.json
+Report out: results/final_model_training_report.txt
+
+============================================================
+1. LOADING DATASET
+============================================================
+Rows loaded   : 21,211
+Columns loaded: 165
+Subjects found: ['S01', 'S02', 'S03', 'S04']
+Activities    : ['running', 'sitting', 'standing', 'walking']
+
+============================================================
+2. FEATURE EXTRACTION
+============================================================
+ML feature columns : 158
+Feature count verified: 158 ✓
+No metadata leakage ✓
+X shape: (21211, 158)
+y shape: (21211,)
+Class distribution:
+  running     :  4,975 frames
+  sitting     :  5,346 frames
+  standing    :  5,460 frames
+  walking     :  5,430 frames
+NaN / Inf check passed ✓
+
+============================================================
+3. TRAINING RANDOM FOREST
+============================================================
+Parameters: {'n_estimators': 200, 'random_state': 42, 'n_jobs': -1}
+Training on ALL subjects and ALL frames ...
+Training complete ✓
+
+============================================================
+4. TRAINING-SET DIAGNOSTICS (NOT generalization metrics)
+============================================================
+
+*** WARNING ***
+The metrics below are computed on the TRAINING data.
+They reflect memorisation, NOT generalisation to new subjects.
+For subject-independent performance see: results/loso_evaluation_report.txt
+
+Training accuracy (in-sample): 100.00%
+
+Classification report (training data):
+              precision    recall  f1-score   support
+
+     running     1.0000    1.0000    1.0000      4975
+     sitting     1.0000    1.0000    1.0000      5346
+    standing     1.0000    1.0000    1.0000      5460
+     walking     1.0000    1.0000    1.0000      5430
+
+    accuracy                         1.0000     21211
+   macro avg     1.0000    1.0000    1.0000     21211
+weighted avg     1.0000    1.0000    1.0000     21211
+
+Top-10 feature importances:
+   1. norm_landmark_26_y                            0.047429
+   2. norm_landmark_28_z                            0.031299
+   3. norm_landmark_26_z                            0.030499
+   4. norm_landmark_25_y                            0.029838
+   5. norm_landmark_32_z                            0.023335
+   6. landmark_32_visibility                        0.023194
+   7. landmark_28_visibility                        0.022302
+   8. norm_landmark_30_z                            0.021893
+   9. landmark_31_visibility                        0.021431
+  10. norm_right_thigh                              0.018179
+
+============================================================
+5. SAVING MODEL AND SCHEMA
+============================================================
+Model saved → models/final_deployment_model.pkl
+Schema saved → models/final_feature_schema.json
+
+============================================================
+6. VERIFICATION
+============================================================
+model file exists ✓
+schema file exists ✓
+model loads with joblib ✓
+sample prediction: running ✓
+schema n_features == 158 ✓
+schema classes: ['running', 'sitting', 'standing', 'walking']
+
+============================================================
+7. WRITING REPORT
+============================================================
+========================================================
+DEPLOYMENT DISCLAIMER
+========================================================
+This model was trained on the COMPLETE available multisubject dataset
+(all 4 subjects, all 4 activities, all 21,211 frames) for deployment
+and live-demo purposes.
+
+Its training-set accuracy MUST NOT be interpreted as subject-independent
+generalization performance.
+
+Subject-independent (Leave-One-Subject-Out) performance is reported
+separately and transparently in:
+  results/loso_evaluation_report.txt
+
+Summary of LOSO results:
+  Random Forest Mean Accuracy : 66.26% ± 11.34%
+  Random Forest Mean Macro F1 : 64.84% ± 13.13%
+
+These LOSO numbers — not the training metrics above — represent the
+true expected performance on a new, unseen subject.
+========================================================

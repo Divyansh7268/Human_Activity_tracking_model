@@ -1,0 +1,92 @@
+========================================================
+LIVE PREDICTION REPORT
+========================================================
+
+Script path       : src/live_prediction.py
+Model used        : models/final_deployment_model.pkl
+Feature schema    : models/final_feature_schema.json
+Number of features: 158
+Activities        : running, sitting, standing, walking
+
+Feature breakdown (158 total)
+-------------------------------
+ 99  Normalized landmark coordinates
+      (hip-centered, torso-length scaled)
+      Features: norm_landmark_{i}_{x,y,z} for i = 0..32
+ 10  Normalized body segment lengths
+      (norm_shoulder_width, norm_hip_width,
+       norm_left/right_upper_arm, norm_left/right_forearm,
+       norm_left/right_thigh, norm_left/right_shin)
+  8  Joint angles (degrees)
+      (left/right elbow, knee, shoulder, hip angles)
+ 33  Landmark visibility scores
+      (landmark_{i}_visibility for i = 0..32)
+  8  Temporal movement features
+      (mean_landmark_displacement, max_landmark_displacement,
+       upper_body_movement, lower_body_movement,
+       left_side_movement, right_side_movement,
+       movement_speed, movement_acceleration)
+
+Temporal buffer approach
+-------------------------------
+- Rolling deque of up to 30 frames maintained in memory.
+- Each entry stores raw (33, 3) xyz landmarks and torso length.
+- Temporal features computed from entire buffer (normalized displacement),
+  matching compute_normalized_temporal_features() in
+  src/normalized_feature_engineering.py exactly.
+- No prediction is made until at least 3 frames are buffered.
+- First frames handled gracefully by suppressing prediction below
+  MIN_BUFFER_FRAMES threshold.
+
+Prediction smoothing
+-------------------------------
+- Last 7 raw predictions held in a smoothing deque (SMOOTH_WINDOW=7).
+- Majority vote across the window determines displayed label.
+- Raw model probabilities displayed as confidence percentage.
+- 'r' key clears all buffers and resets smoothing history.
+
+Keyboard controls
+-------------------------------
+  q  -- quit the application cleanly
+  r  -- reset temporal buffer and smoothing history
+
+Failure handling
+-------------------------------
+- No pose detected     : skeleton not drawn; buffer not updated.
+- Incomplete landmarks : array rejected (len(lms) != 33 check).
+- Near-zero torso      : scale clamped to 1e-4 (no division by zero).
+- Insufficient history : prediction suppressed until MIN_BUFFER_FRAMES=3.
+- Webcam unavailable   : error message, clean exit.
+- Prediction errors    : warning printed, frame skipped, loop continues.
+- MediaPipe errors     : warning printed, frame skipped, loop continues.
+
+Limitations
+-------------------------------
+1. LOSO evaluation shows mean accuracy 66.26% +/- 11.34% on unseen subjects.
+   Live predictions on new subjects may show similar or lower accuracy,
+   especially for standing/walking confusion and subjects with partial
+   lower-body visibility.
+
+2. Standing and walking are the most easily confused activities (LOSO result).
+
+3. Camera must capture full body including feet for best accuracy.
+   Partial visibility of lower body significantly degrades standing prediction.
+
+4. Only one subject at a time (num_poses=1 in MediaPipe config).
+
+5. Temporal features assume approx 0.15 s frame spacing from training;
+   real webcam frame rate may differ, causing slight feature magnitude drift.
+
+6. The model was trained on 4 subjects only. Diversity of training data
+   is limited.
+
+DEPLOYMENT DISCLAIMER
+-------------------------------
+This is a demonstration application trained on the full 4-subject dataset.
+Its live accuracy MUST NOT be reported as subject-independent generalization.
+Subject-independent performance is documented in:
+  results/loso_evaluation_report.txt
+
+  Random Forest Mean Accuracy : 66.26% +/- 11.34%
+  Random Forest Mean Macro F1 : 64.84% +/- 13.13%
+========================================================

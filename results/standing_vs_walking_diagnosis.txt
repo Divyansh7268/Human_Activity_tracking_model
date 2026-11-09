@@ -1,0 +1,124 @@
+================================================================================
+DIAGNOSTIC REPORT: STANDING VS. WALKING CONFUSION IN REAL-TIME PREDICTION
+================================================================================
+
+1. DATASET COUNTS
+--------------------------------------------------------------------------------
+Total Samples: 1,298
+- sitting : 507 samples (39.1%)
+- standing: 446 samples (34.4%)
+- walking : 221 samples (17.0%)
+- running : 124 samples (9.5%)
+
+Observation:
+Walking has half the sample size of standing (221 vs 446).
+
+
+2. STANDING VS. WALKING TEST SET PERFORMANCE (OFFLINE)
+--------------------------------------------------------------------------------
+Test Set Sample Counts (20% stratified split = 260 total samples):
+- Standing test samples: 89
+- Walking test samples : 44
+
+Confusion Matrix Breakdown on Test Set:
+- Standing correctly classified as Standing : 87 (97.8%)
+- Standing misclassified as Walking        :  2 ( 2.2%)
+- Walking correctly classified as Walking   : 44 (100.0%)
+- Walking misclassified as Standing        :  0 ( 0.0%)
+
+Class-wise Metrics:
+- Standing: Precision = 1.0000, Recall = 0.9775, F1-Score = 0.9886
+- Walking : Precision = 0.9565, Recall = 1.0000, F1-Score = 0.9778
+
+Observation:
+Offline test accuracy is deceptively high (>97%) because test samples were drawn
+from the exact same continuous recording session (same distance, clothing, room position).
+
+
+3. CLASS-WISE FEATURE STATISTICS: MOST DIFFERENT FEATURES
+--------------------------------------------------------------------------------
+Comparison of feature means and effect size (Cohen's d) between Standing and Walking:
+
+Top Discriminative Features by Cohen's d:
+1. landmark_32_x        (Mean Stand: 0.368, Mean Walk: 0.423, Cohen's d: 1.41)
+2. landmark_28_x        (Mean Stand: 0.377, Mean Walk: 0.427, Cohen's d: 1.39)
+3. landmark_30_x        (Mean Stand: 0.383, Mean Walk: 0.431, Cohen's d: 1.34)
+4. right_thigh_length   (Mean Stand: 0.211, Mean Walk: 0.261, Cohen's d: 1.31)
+5. landmark_11_y        (Mean Stand: 0.172, Mean Walk: 0.111, Cohen's d: 1.30)
+6. landmark_12_y        (Mean Stand: 0.174, Mean Walk: 0.111, Cohen's d: 1.28)
+7. landmark_26_x        (Mean Stand: 0.375, Mean Walk: 0.416, Cohen's d: 1.20)
+8. relative_landmark_26_y (Mean Stand: 0.209, Mean Walk: 0.256, Cohen's d: 1.19)
+
+Biomechanical Joint Angles Comparison:
+- left_knee_angle       : Mean Stand = 140.71°, Mean Walk = 142.95° (Cohen's d = 0.19 -> nearly identical)
+- right_knee_angle      : Mean Stand = 137.62°, Mean Walk = 143.22° (Cohen's d = 0.55 -> minimal difference)
+- left_shoulder_angle   : Mean Stand =  18.26°, Mean Walk =  18.47° (Cohen's d = 0.02 -> virtually identical)
+- right_shoulder_angle  : Mean Stand =  23.19°, Mean Walk =  21.68° (Cohen's d = 0.15 -> virtually identical)
+- left_elbow_angle      : Mean Stand = 112.09°, Mean Walk = 119.12° (Cohen's d = 0.37)
+- right_elbow_angle     : Mean Stand = 120.15°, Mean Walk = 129.03° (Cohen's d = 0.52)
+
+Key Distances Comparison:
+- left_shin_length      : Mean Stand = 0.289, Mean Walk = 0.292 (Cohen's d = 0.09)
+- right_shin_length     : Mean Stand = 0.293, Mean Walk = 0.296 (Cohen's d = 0.11)
+- shoulder_width        : Mean Stand = 0.154, Mean Walk = 0.197 (Cohen's d = 0.81)
+
+Observation:
+Biomechanical joint angles (knees, hips, shoulders) between standing and walking
+exhibit minimal separation in static snapshots. The largest differences in the
+dataset came from absolute x/y coordinates and slight body distance scaling.
+
+
+4. TEMPORAL / MOVEMENT INFORMATION STATUS
+--------------------------------------------------------------------------------
+- Velocity features           : NONE (0)
+- Acceleration features       : NONE (0)
+- Frame-to-frame displacement : NONE (0)
+- Temporal sequence/windowing : NONE (0)
+
+Conclusion:
+The dataset currently contains ONLY static, single-frame spatial coordinates.
+The machine learning model is strictly performing static pose classification on
+individual image frames, with zero awareness of movement, speed, or change over time.
+
+
+5. LIVE VS. TRAINING FEATURE PIPELINE VERIFICATION
+--------------------------------------------------------------------------------
+- Number of features expected by model : 247
+- Number of features produced live     : 247
+- Feature column names and ordering    : 100% exact match
+- Feature scaling                      : Handled identically via saved Pipeline (StandardScaler)
+- Feature extraction implementation    : Direct shared reuse of extract_features_from_landmarks()
+
+Conclusion:
+There is NO software bug, missing column, or ordering discrepancy between the
+training pipeline and live webcam inference. The live prediction pipeline executes
+the exact same mathematical transformations as the offline training script.
+
+
+6. LIKELY TECHNICAL REASONS FOR CONFUSION IN REAL-WORLD TESTING
+--------------------------------------------------------------------------------
+1. STATIC AMBIGUITY (Core Biomechanical Limitation):
+   Walking is inherently a dynamic process defined by motion over time.
+   In any static single video frame, a walking person frequently passes through
+   a pose where both legs are straight and feet are grounded—geometrically indistinguishable
+   from an upright standing pose. Without velocity or temporal displacement across frames,
+   a static classifier cannot reliably tell whether a still pose is holding still or in mid-stride.
+
+2. OVER-RELIANCE ON ABSOLUTE SCREEN COORDINATES:
+   Feature importance analysis reveals that the Random Forest model derives:
+   - 75.8% of its decision importance from raw absolute coordinates (x, y, z, visibility)
+   - 22.0% from relative landmarks
+   - Only 2.2% from distances and joint angles
+   Because the user recorded standing at one specific position/depth in front of the camera
+   and walking with slight step displacement or closer to the lens, the decision trees learned
+   positional/scale thresholds (e.g., shoulder_width ~ 0.19 or landmark_11_y ~ 0.11) rather
+   than intrinsic motion patterns. In live testing, simply standing slightly closer or in a
+   different part of the webcam frame triggers branches trained on the walking recording.
+
+3. SITTING VS. STANDING/WALKING CONTRAST:
+   Sitting is recognized accurately because sitting fundamentally alters static body geometry:
+   hip-to-knee vertical alignment changes drastically and absolute body height drops significantly.
+   Standing and walking share almost the same upright torso and leg geometry, making them
+   the primary point of failure for a static single-frame classifier.
+================================================================================
+

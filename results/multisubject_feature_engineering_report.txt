@@ -1,0 +1,51 @@
+=====================================================================================
+STEP 13: MULTI-SUBJECT FEATURE ENGINEERING AUDIT REPORT
+=====================================================================================
+1. INPUT DATASET
+   Path           : data\raw\multisubject_pose_dataset.csv
+   Raw Rows       : 21,227
+   Raw Columns    : 139
+
+2. OUTPUT DATASET
+   Path           : data\processed\multisubject_normalized_temporal_features.csv
+   Processed Rows : 21,211
+   Total Columns  : 165
+
+3. NORMALIZATION METHOD
+   • Origin Reference  : Hip midpoint ((left_hip + right_hip) / 2.0).
+   • Scale Reference   : Torso length (shoulder midpoint to hip midpoint).
+   • Translation Invariance: All coordinates centered at hip midpoint.
+   • Scale Invariance      : All relative coordinates & segment lengths divided by torso length.
+   • Absolute Coordinates  : Strictly EXCLUDED from ML features.
+
+4. SPATIAL FEATURES (150 TOTAL)
+   • 99 Normalized landmark coordinates (norm_landmark_0_x ... norm_landmark_32_z)
+   • 10 Normalized body segment lengths (norm_shoulder_width ... norm_right_shin)
+   •  8 Joint angles (elbows, knees, shoulders, and hip flexion angles)
+   • 33 MediaPipe landmark visibility confidence scores
+
+5. TEMPORAL FEATURES (8 TOTAL)
+   • mean_landmark_displacement, max_landmark_displacement
+   • upper_body_movement, lower_body_movement
+   • left_side_movement, right_side_movement
+   • movement_speed, movement_acceleration
+   • Computed strictly within sequence boundaries; zero leakage across trials.
+
+6. METADATA PRESERVED (7 COLUMNS)
+   • subject_id, activity, activity_code, trial_id, sequence_id, frame_id, timestamp
+   • Explicitly retained for GroupKFold and Leave-One-Subject-Out evaluation.
+
+7. BOUNDARY ROWS REMOVED
+   • Rows removed : 16 (exactly frame 0 for each of the 16 sequences)
+   • 21,227 raw frames -> 21,211 processed frames (99.92% data retention)
+
+8. VALIDATION CHECKS
+   • Missing (NaN) values : 0 (PASS)
+   • Infinite values      : 0 (PASS)
+   • Subjects (4/4)       : S01, S02, S03, S04 (PASS)
+   • Activities (4/4)     : running, sitting, standing, walking (PASS)
+   • Sequences (16/16)    : 16 sequences intact (PASS)
+
+9. EVALUATION READINESS VERDICT
+   Verdict: READY_FOR_SUBJECT_INDEPENDENT_EVALUATION
+=====================================================================================

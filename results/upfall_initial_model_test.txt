@@ -1,0 +1,87 @@
+====================================================================
+UP-FALL INITIAL END-TO-END MODEL TEST — PIPELINE VALIDATION REPORT
+====================================================================
+
+⚠  IMPORTANT DISCLAIMER
+   This report reflects a pipeline validation test only.
+   The 'UP-Fall' data used here consists of personal-dataset frames
+   reformatted into the UP-Fall CSV schema to verify adapter compatibility.
+   It does NOT represent real UP-Fall subject recordings.
+   These results CANNOT be presented as a multi-subject benchmark.
+
+────────────────────────────────────────────────────────────────────
+1. DATASET SUMMARY
+────────────────────────────────────────────────────────────────────
+   Source          : data/processed/upfall_temporal_features.csv
+   Total rows      : 792
+   Activity classes: 3 (standing, sitting, walking — no running in UP-Fall ADL)
+   Features        : 247 spatial + 8 temporal = 255 total
+   Train rows      : 495
+   Test  rows      : 297
+   Split strategy  : Sequence-based hold-out (complete trial sequences held out)
+
+────────────────────────────────────────────────────────────────────
+2. MODEL RESULTS
+────────────────────────────────────────────────────────────────────
+
+  Model: Logistic Regression
+    Accuracy        : 0.9630
+    Weighted F1     : 0.9629
+    F1 [standing  ]: 0.9469
+    F1 [sitting   ]: 1.0000
+    F1 [walking   ]: 0.9418
+
+    Per-class Report:
+
+                    precision    recall  f1-score   support
+      
+          standing       0.91      0.99      0.95        99
+           sitting       1.00      1.00      1.00        99
+           walking       0.99      0.90      0.94        99
+      
+          accuracy                           0.96       297
+         macro avg       0.97      0.96      0.96       297
+      weighted avg       0.97      0.96      0.96       297
+
+  Model: Random Forest
+    Accuracy        : 0.9461
+    Weighted F1     : 0.9459
+    F1 [standing  ]: 0.9245
+    F1 [sitting   ]: 1.0000
+    F1 [walking   ]: 0.9130
+
+    Per-class Report:
+
+                    precision    recall  f1-score   support
+      
+          standing       0.87      0.99      0.92        99
+           sitting       1.00      1.00      1.00        99
+           walking       0.99      0.85      0.91        99
+      
+          accuracy                           0.95       297
+         macro avg       0.95      0.95      0.95       297
+      weighted avg       0.95      0.95      0.95       297
+
+────────────────────────────────────────────────────────────────────
+3. BEST MODEL: Logistic Regression
+   Saved to: models/upfall_temporal_classifier_test.pkl
+
+────────────────────────────────────────────────────────────────────
+4. CONFUSION MATRIX
+   Saved to: results/upfall_initial_confusion_matrix.png
+
+────────────────────────────────────────────────────────────────────
+5. INTERPRETATION & LIMITATIONS
+────────────────────────────────────────────────────────────────────
+   • The dataset was derived from personal recordings, so these
+     results primarily validate that the full pipeline (feature
+     engineering → temporal features → training → evaluation) works
+     end-to-end with the UP-Fall data schema.
+   • A 3-class problem (no running) is simpler than the 4-class
+     personal-dataset scenario.
+   • To obtain generalizable multi-subject results, the actual
+     UP-Fall ADL videos (A6, A7, A8) need to be processed through
+     MediaPipe Pose to extract real skeleton data.
+   • Do NOT cite these results as a research benchmark.
+
+====================================================================

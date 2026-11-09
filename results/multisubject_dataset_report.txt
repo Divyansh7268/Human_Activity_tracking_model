@@ -1,0 +1,12 @@
+================================================================================
+MULTI-SUBJECT DATASET AUDIT REPORT
+================================================================================
+Target Dataset: data\raw\multisubject_pose_dataset.csv
+Status: FILE NOT FOUND OR EMPTY.
+
+To collect data, run:
+  python src/collect_multisubject_data.py
+
+Protocol Requirement:
+  5+ subjects x 4 activities (standing, sitting, walking, running) x 3+ trials.
+================================================================================

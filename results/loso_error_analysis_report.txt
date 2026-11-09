@@ -1,0 +1,144 @@
+=====================================================================================
+STEP 15: LEAVE-ONE-SUBJECT-OUT (LOSO) GENERALIZATION DIAGNOSTICS REPORT
+=====================================================================================
+
+─────────────────────────────────────────────────────────────────────────────────────
+1. OVERALL LOSO GENERALIZATION FINDINGS
+─────────────────────────────────────────────────────────────────────────────────────
+Leave-One-Subject-Out (LOSO) cross-validation evaluated 4 distinct individuals
+(21,211 frames across 16 sequences) using 158 normalized spatial and temporal features.
+
+Overall Performance Summary:
+  • Random Forest Mean Accuracy       : 66.26% ± 11.34%
+  • Random Forest Mean Macro F1       : 64.84% ± 13.13%
+  • Logistic Regression Mean Accuracy : 60.97% ± 11.87%
+  • Logistic Regression Mean Macro F1 : 60.29% ± 12.42%
+
+Core Empirical Takeaway:
+  While within-subject evaluations previously achieved >98% accuracy, true subject-
+  independent generalization drops to ~65% Macro F1. This performance gap is driven
+  NOT by posture shape (sitting generalizes at 99.8% F1), but by subject-to-subject
+  variability in camera framing, lower-limb tracking visibility, and dynamic thresholding.
+
+─────────────────────────────────────────────────────────────────────────────────────
+2. SUBJECT-SPECIFIC PERFORMANCE BREAKDOWN (RANDOM FOREST)
+─────────────────────────────────────────────────────────────────────────────────────
+Subject  | Frames  | Accuracy  | Macro F1  | Standing F1  | Sitting F1  | Walking F1  | Running F1 
+------------------------------------------------------------------------------------------
+S01      | 5,548   |  54.20%   |  49.97%   |     0.53%    |    99.13%  |    57.77%  |    42.44%
+S02      | 4,898   |  77.40%   |  75.92%   |    57.83%    |   100.00%  |    65.00%  |    80.86%
+S03      | 5,438   |  59.12%   |  57.61%   |    33.43%    |   100.00%  |    45.04%  |    51.97%
+S04      | 5,327   |  74.34%   |  75.85%   |    73.66%    |   100.00%  |    65.15%  |    64.61%
+------------------------------------------------------------------------------------------
+Bimodal Performance Split:
+  • Generalizing Subjects : S02 (77.40% acc, 75.92% F1) and S04 (74.34% acc, 75.85% F1)
+  • Failing Subjects      : S01 (54.20% acc, 49.97% F1) and S03 (59.12% acc, 57.61% F1)
+
+─────────────────────────────────────────────────────────────────────────────────────
+3. ACTIVITY-SPECIFIC GENERALIZATION HIERARCHY
+─────────────────────────────────────────────────────────────────────────────────────
+1. SITTING  : 99.78% ± 0.43% F1 (Flawless across all 4 subjects; zero false positives)
+2. RUNNING  : 59.97% ± 16.62% F1 (Strong in S02/S04, confounded with walking in S01/S03)
+3. WALKING  : 58.24% ±  9.45% F1 (Consistent across subjects, but overlaps with slow run)
+4. STANDING : 41.36% ± 31.86% F1 (Catastrophic collapse in S01 at 0.53% and S03 at 33.4%)
+
+─────────────────────────────────────────────────────────────────────────────────────
+4. MAIN CONFUSION PATTERNS IDENTIFIED
+─────────────────────────────────────────────────────────────────────────────────────
+Confusion Pair 1: Standing -> Running (1,707 frames, 31.2% of all standing samples)
+  - Overwhelmingly driven by Subject S01 (1,320 frames) and S03 (296 frames).
+
+Confusion Pair 2: Standing -> Walking (1,789 frames, 32.8% of all standing samples)
+  - Overwhelmingly driven by Subject S03 (712 frames), S02 (615 frames), and S01 (307 frames).
+  - Net result: 64.0% of all standing frames across the dataset were mispredicted as locomotion!
+
+Confusion Pair 3: Walking <-> Running Boundary Overlap
+  - 1,351 walking frames (24.9%) predicted as running.
+  - 1,034 running frames (20.8%) predicted as walking.
+  - Caused by natural cadence variation between fast walking and slow jogging across people.
+
+─────────────────────────────────────────────────────────────────────────────────────
+5. TEMPORAL FEATURE ANALYSIS & THRESHOLD MISALIGNMENT
+─────────────────────────────────────────────────────────────────────────────────────
+Empirical Movement Speed Comparison (Torso Lengths / sec):
+  • S01: Standing = 2.091 | Walking = 2.865 | Running = 3.805
+  • S02: Standing = 2.133 | Walking = 6.703 | Running = 7.712
+  • S03: Standing = 1.425 | Walking = 2.806 | Running = 3.207
+  • S04: Standing = 2.164 | Walking = 3.246 | Running = 4.385
+
+Critical Finding:
+  In Subject S02, walking speed is 6.70 torso lengths/sec. But in Subject S01, running speed
+  is only 3.80 torso lengths/sec! Furthermore, S01's standing movement speed (2.09)
+  is higher than S03's walking speed (median 1.74)! Because motion speed is not calibrated
+  per individual, a single global decision threshold inevitably misclassifies low-cadence
+  subjects as standing and high-jitter standing subjects as walking/running.
+
+─────────────────────────────────────────────────────────────────────────────────────
+6. SUBJECT DISTRIBUTION SHIFT (ANOVA EFFECT SIZES)
+─────────────────────────────────────────────────────────────────────────────────────
+Top Features with Largest Between-Subject Variance (Eta-Squared):
+  1. landmark_31_visibility         | Eta^2 = 0.2351 (F = 2173.1)
+  2. landmark_32_visibility         | Eta^2 = 0.2123 (F = 1904.9)
+  3. landmark_27_visibility         | Eta^2 = 0.2087 (F = 1864.2)
+  4. landmark_29_visibility         | Eta^2 = 0.1962 (F = 1725.3)
+  5. landmark_28_visibility         | Eta^2 = 0.1891 (F = 1648.4)
+  6. landmark_30_visibility         | Eta^2 = 0.1449 (F = 1198.2)
+  7. landmark_24_visibility         | Eta^2 = 0.1140 (F = 909.3)
+  8. landmark_23_visibility         | Eta^2 = 0.0991 (F = 777.9)
+
+Key Finding:
+  The top shifted features are overwhelmingly LOWER BODY VISIBILITIES (landmark_26, 28, 30, 32)
+  and ankle/knee Z-depths. Between-subject variance accounts for up to 47.9% of total variance
+  in these features, directly confirming camera framing discrepancies across subjects.
+
+─────────────────────────────────────────────────────────────────────────────────────
+7. INVESTIGATION OF THE STANDING PROBLEM (EVIDENCE VS HYPOTHESIS)
+─────────────────────────────────────────────────────────────────────────────────────
+[1. OBSERVED EVIDENCE]
+  - S01 Standing Foot Visibility (landmark_32) : 0.455 ± 0.251 (median 0.515)
+  - S02 Standing Foot Visibility (landmark_32) : 0.978 ± 0.017 (median 0.982)
+  - S03 Standing Foot Visibility (landmark_32) : 0.964 ± 0.020 (median 0.971)
+  - S04 Standing Foot Visibility (landmark_32) : 0.976 ± 0.018 (median 0.982)
+  - S01 Standing Ankle Visibility (landmark_28): 0.552 vs ~0.98 for S02-S04.
+  - Random Forest Top Features: 6 of the top 12 features were lower-body visibility scores.
+
+[2. PLAUSIBLE SCIENTIFIC EXPLANATION]
+  - In Subject S01, the subject stood closer to the webcam, causing feet and ankles to be
+    partially occluded by the bottom frame edge (visibility ~0.45-0.55).
+  - When lower limbs are occluded, MediaPipe infers joint positions with high variance and noise.
+  - In training on S02/S03/S04, lower limb visibility dropped primarily during active locomotion (running).
+  - The decision trees leveraged low lower-body visibility as a surrogate rule for 'running'.
+  - When tested on S01 standing, the model triggered this running rule, creating the 80.9% running error.
+
+[3. UNSUPPORTED SPECULATION]
+  - It was previously speculated that camera vibrations caused the S01 standing failure.
+  - Examination shows head and shoulder landmarks did NOT exhibit high jitter in S01.
+  - The failure was driven by camera truncation of lower limbs and visibility feature reliance,
+    not mechanical vibration of the webcam hardware.
+
+─────────────────────────────────────────────────────────────────────────────────────
+8. METHODOLOGICAL & PIPELINE LIMITATIONS
+─────────────────────────────────────────────────────────────────────────────────────
+  1. Visibility Scores as Model Features:
+     Treating MediaPipe raw visibility as a predictive feature introduces severe camera framing
+     bias, because whether a foot is visible depends on camera distance/crop, not activity.
+  2. Static Frame-Rate / Window-Agnostic Speed:
+     Instantaneous frame-to-frame speed (dt ~ 0.048s) is highly sensitive to single-frame keypoint
+     jitter. Windowed temporal smoothing (e.g. 0.5s or 1.0s window) is needed.
+  3. Small Subject Count (N=4):
+     A 4-subject dataset means each training fold sees only 3 individuals' gait styles,
+     making the classifier susceptible to idiosyncrasies of individual subjects.
+
+─────────────────────────────────────────────────────────────────────────────────────
+9. RECOMMENDED NEXT EXPERIMENT
+─────────────────────────────────────────────────────────────────────────────────────
+Experiment 1: Feature Pruning — Remove Raw Landmark Visibility from ML Features
+  Hypothesis: Excluding the 33 visibility confidence features will prevent the classifier
+  from using camera-crop artifacts as activity predictors, drastically improving S01 standing F1.
+
+Experiment 2: Windowed Temporal Feature Aggregation
+  Hypothesis: Computing motion features over a rolling window (e.g., 0.5s) instead of raw
+  consecutive frames will filter high-frequency keypoint jitter during standing postures.
+=====================================================================================
+LOSO_ERROR_ANALYSIS_COMPLETE
+=====================================================================================
